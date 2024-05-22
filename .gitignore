@@ -12,3 +12,4 @@ venv/
 *.log
 /software/startup.conf
 *.drawio.dtmp
+software/env/*
