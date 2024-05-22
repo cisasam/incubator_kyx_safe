@@ -13,3 +13,4 @@ venv/
 /software/startup.conf
 *.drawio.dtmp
 software/env/*
+software/digital_twin/data_access/influxdbserver/influxdb/*
