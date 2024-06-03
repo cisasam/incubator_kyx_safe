@@ -34,7 +34,7 @@ class ControllerSafeKyx:
         self.Theater_covariance_init = None
         self.T_covariance_init = None
 
-        self.old_heater = None
+        self.old_heater = 0.0
 
         # Hard coded for now
         self.max_temp = 40
@@ -106,16 +106,28 @@ class ControllerSafeKyx:
         self.T_heater = next_x[0, 0]
 
     def ctrl_step(self):
-        if (self.T_heater >= (self.min_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater 
-                                *self.C_heater/(self.C_heater-self.step_size*self.G_heater)):
-            self.heater_ctrl = False
-        elif (self.T_heater <= (self.max_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater 
-                                - self.V_heater*self.I_heater*self.step_size/self.C_heater):
-            self.heater_ctrl = True
+        if self.old_heater == 0.0:
+            if (self.T_heater >= (self.min_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater 
+                                    *self.C_heater/(self.C_heater-self.step_size*self.G_heater)):
+                self.heater_ctrl = False
+            elif (self.T_heater <= (self.max_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater 
+                                    - self.V_heater*self.I_heater*self.step_size/self.C_heater):
+                self.heater_ctrl = True
+            else:
+                # Failure state: we turn off the incubator for now
+                self.heater_ctrl = False
+                self._l.debug("Liveness Error")
         else:
-            # Failure state: we turn off the incubator for now
-            self.heater_ctrl = False
-            self._l.debug("Liveness Error")
+            if (self.T_heater <= (self.max_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater 
+                                    - self.V_heater*self.I_heater*self.step_size/self.C_heater):
+                self.heater_ctrl = True
+            elif (self.T_heater >= (self.min_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater 
+                                    *self.C_heater/(self.C_heater-self.step_size*self.G_heater)):
+                self.heater_ctrl = False
+            else:
+                # Failure state: we turn off the incubator for now
+                self.heater_ctrl = False
+                self._l.debug("Liveness Error")
         
 
     def cleanup(self):
