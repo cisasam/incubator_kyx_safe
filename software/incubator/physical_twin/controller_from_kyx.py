@@ -154,7 +154,7 @@ class ControllerSafeKyx:
             "measurement": "controller",
             "time": time.time_ns(),
             "tags": {
-                "source": "controller_open_loop"
+                "source": "controller_safe"
             },
             "fields": {
                 "plant_time": data["time"],
@@ -164,6 +164,8 @@ class ControllerSafeKyx:
                 "next_action_timer": 0,
                 "n_samples_period": 40,
                 "n_samples_heating": 5,
+                "lower_bound": 35,
+                "upper_bound": 40,
             }
         }
         self.rabbitmq.send_message(routing_key=ROUTING_KEY_CONTROLLER, message=ctrl_data)

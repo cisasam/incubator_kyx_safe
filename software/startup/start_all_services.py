@@ -1,12 +1,12 @@
 from startup.start_energy_saver import start_energy_saver
 from startup.start_plant_kalmanfilter import start_plant_kalmanfilter
-from startup.start_docker_influxdb import start_docker_influxdb
 from startup.start_docker_rabbitmq import start_docker_rabbitmq
 from startup.start_incubator_realtime_mockup import start_incubator_realtime_mockup
-from startup.start_influx_data_recorder import start_influx_data_recorder
 from startup.start_low_level_driver_mockup import start_low_level_driver_mockup
 from startup.utils.start_as_daemon import start_as_daemon
 from startup.start_controller_kyx_safe import start_controller_from_kyx
+from startup.start_docker_influxdb import start_docker_influxdb
+from startup.start_influx_data_recorder import start_influx_data_recorder
 
 if __name__ == '__main__':
     start_docker_rabbitmq()
