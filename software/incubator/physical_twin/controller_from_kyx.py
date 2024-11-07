@@ -6,7 +6,6 @@ import numpy as np
 
 from incubator.communication.server.rabbitmq import Rabbitmq, ROUTING_KEY_STATE, ROUTING_KEY_HEATER, ROUTING_KEY_FAN, \
     from_ns_to_s, ROUTING_KEY_CONTROLLER
-from digital_twin.communication.rabbitmq_protocol import ROUTING_KEY_KF_UPDATE_PARAMETERS
 from incubator.communication.shared.protocol import ROUTING_KEY_UPDATE_CTRL_PARAMS
 from incubator.monitoring.kalman_filter_4p import construct_filter
 
@@ -33,6 +32,9 @@ class ControllerSafeKyx:
         self.std_dev = None
         self.Theater_covariance_init = None
         self.T_covariance_init = None
+
+        self.ubound_h = None
+        self.lbound_h = None
 
         self.old_heater = 0.0
 
@@ -103,23 +105,21 @@ class ControllerSafeKyx:
         self.T_heater = next_x[0, 0]
 
     def ctrl_step(self):
+        self.ubound_h = (self.max_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater - self.V_heater*self.I_heater*self.step_size/self.C_heater
+        self.lbound_h = ((self.min_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater) *self.C_heater/(self.C_heater-self.step_size*self.G_heater)
         if self.old_heater == 0.0:
-            if (self.T_heater >= ((self.min_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater)
-                                    *self.C_heater/(self.C_heater-self.step_size*self.G_heater)):
+            if (self.T_heater >= self.lbound_h):
                 self.heater_ctrl = False
-            elif (self.T_heater <= (self.max_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater 
-                                    - self.V_heater*self.I_heater*self.step_size/self.C_heater):
+            elif (self.T_heater <= self.ubound_h):
                 self.heater_ctrl = True
             else:
                 # Failure state: we turn off the incubator for now
                 self.heater_ctrl = False
                 self._l.debug("Liveness Error")
         else:
-            if (self.T_heater <= (self.max_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater 
-                                    - self.V_heater*self.I_heater*self.step_size/self.C_heater):
+            if (self.T_heater <= self.ubound_h):
                 self.heater_ctrl = True
-            elif (self.T_heater >= ((self.min_temp*(self.G_heater+self.G_box)-self.G_box*self.room_temperature)/self.G_heater)
-                                    *self.C_heater/(self.C_heater-self.step_size*self.G_heater)):
+            elif (self.T_heater >= self.lbound_h):
                 self.heater_ctrl = False
             else:
                 # Failure state: we turn off the incubator for now
@@ -163,7 +163,9 @@ class ControllerSafeKyx:
                 "n_samples_heating": 5,
                 "lower_bound": 35.0,
                 "upper_bound": 40.0,
-                "t_heater": self.T_heater
+                "t_heater": self.T_heater,
+                "ubound_h": self.ubound_h,
+                "lbound_h": self.lbound_h
             }
         }
         self.rabbitmq.send_message(routing_key=ROUTING_KEY_CONTROLLER, message=ctrl_data)

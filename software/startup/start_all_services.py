@@ -1,3 +1,4 @@
+from startup.start_controller_kyx_safe import start_controller_from_kyx
 from startup.utils.start_as_daemon import start_as_daemon
 from startup.start_docker_influxdb import start_docker_influxdb
 from startup.start_influx_data_recorder import start_influx_data_recorder
@@ -18,7 +19,7 @@ if __name__ == '__main__':
     # Choose one of the controllers below:
     # start_as_daemon(start_controller_physical)
     # start_as_daemon(start_controller_physical_open_loop)
-    # start_as_daemon(start_controller_from_kyx)
+    start_as_daemon(start_controller_from_kyx)
 
     # Enable self adaptation
     # start_as_daemon(start_self_adaptation_manager)
