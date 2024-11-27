@@ -1,36 +1,56 @@
-import os
-import tempfile
 
 import matplotlib.pyplot as plt
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
 
 
-def plot_incubator_data(data):
-    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, 1)
+def plot_incubator_data(data1,data2,data3,data4):
+    plt.rcParams['text.usetex'] = True
+    plt.rcParams.update({'font.size': 9})
+    
 
-    ax1.plot(data["time"], data["t1"], label="t1")
-    ax1.plot(data["time"], data["t2"], label="t2")
-    ax1.plot(data["time"], data["t3"], label="t3")
-    ax1.plot(data["time"], data["average_temperature"], label="average_temperature")
-    ax1.legend()
+    plt.rc('text.latex', preamble=r'\usepackage{xspace}')
+    fig, (ax1) = plt.subplots(1, 1)
 
-    ax2.plot(data["time"], data["heater_on"], label="heater_on")
-    ax2.plot(data["time"], data["fan_on"], label="fan_on")
-    ax2.legend()
+    ax1.plot((data1["time"]-data1["time"][0])/10e8, data1["average_temperature"], label=r'$T_c^1$')
+    ax1.plot((data2["time"]-data2["time"][0])/10e8, data2["average_temperature"], label=r'$T_c^2$')
+    ax1.plot((data3["time"]-data3["time"][0])/10e8, data3["average_temperature"], label=r'$T_c^3$')
+    ax1.plot((data4["time"]-data4["time"][0])/10e8, data4["average_temperature"], label=r'$T_c^4$', color='tab:purple')
+    
 
-    ax3.plot(data["time"], data["execution_interval"], label="execution_interval")
-    ax3.plot(data["time"], data["elapsed"], label="elapsed")
-    ax3.legend()
+    ax1.hlines(y=37.75, colors='k', xmin=0, xmax=((data1['time'].iloc[-1])-data1["time"][0])/10e8, label='Bounds')
+    ax1.hlines(y=36.5, colors='k', xmin=0, xmax=((data1['time'].iloc[-1])-data1["time"][0])/10e8)
+    ax1.set_ylabel("Temperature (°C)")
+    ax1.set_xlabel("time (s)")
 
-    ax4.plot(data["time"], data["power_in"], label="power_in")
-    ax4.legend()
+    ax1.legend(loc=4)
+    
 
-    ax5.plot(data["time"], data["energy_in"], label="energy_in")
-    ax5.plot(data["time"], data["potential_energy"], label="potential_energy")
-    ax5.legend()
-
+    fig.align_xlabels()
+    plt.xlim(0,600)
+    fig.set_figwidth(4.2)
+    fig.set_figheight(3)
+    fig.set_layout_engine(layout='constrained')
+    plt.show()
     return fig
+
+def plot_controller_data(data):
+    plt.rcParams['text.usetex'] = True
+    plt.rc('text.latex', preamble=r'\usepackage{xspace}')
+    fig, (ax1) = plt.subplots(1, 1)
+
+    ax1.plot((data["plant_time"]-data["time"][0])/10e8, data["t_heater"], label=r"$T_h$")
+    ax1.plot((data["plant_time"]-data["time"][0])/10e8, data["ubound_h"], label='safeToHeat')
+    ax1.plot((data["plant_time"]-data["time"][0])/10e8, data["lbound_h"], label='safeToCool')
+    ax1.set_ylabel("Temperature (°C)")
+
+    ax1.legend(loc=4)
+    ax1.set_xlabel("time (s)")
+    fig.align_xlabels()
+
+    plt.xlim(0,600)
+
+    plt.show()
+    return fig
+
 
 
 def plotly_incubator_data(data, compare_to=None, heater_T_data=None, events=None,

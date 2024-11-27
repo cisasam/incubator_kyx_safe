@@ -31,7 +31,7 @@ class IncubatorDataRecorderCSV:
             if self.current_file_name is not None:
                 self.current_file.close()
 
-            self.current_file_name = datetime.now().strftime(f"{self.csv_file_prefix}_%Y-%m-%d__%H_%M_%S.csv")
+            self.current_file_name = datetime.now().strftime(f"{self.csv_file_prefix}_%Y-%m-%d__%H_%M_%S_state.csv")
             new_dir = os.path.join(self.csv_file_path, self.current_file_name)
             self._l.debug(f"Rollover to new file in {new_dir}.")
             self.current_file = open(new_dir, 'w', newline='')

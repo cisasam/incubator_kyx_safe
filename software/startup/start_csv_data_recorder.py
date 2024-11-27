@@ -4,6 +4,7 @@ import time
 from incubator.config.config import config_logger, load_config
 from digital_twin.data_access.dbmanager.incubator_state_csv_recorder import IncubatorDataRecorderCSV
 
+
 if __name__ == '__main__':
     config_logger("logging.conf")
     l = logging.getLogger("start_csv_data_recorder")
